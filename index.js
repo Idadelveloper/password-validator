@@ -49,7 +49,7 @@ function inputChange() {
 // checks if password satisfies rules
 async function checkValidity(word) {
     
-    if (word.length > 16 || word.length < 6 ) {
+    if (word.length > 16 || word.length < 8 ) {
         console.log(word.length)
         return false
     }
@@ -64,17 +64,15 @@ async function checkValidity(word) {
     }
     console.log("latin checked")
 
-    var z = word.match(/[\d\.]+|\D+/g);
-    console.log(z);
+    var splitted = word.match(/[\d\.]+|\D+/g);
     
-    for (i=0; i < z.length; i++) {
-        if (z[i].match(/[A-za-z0–9_]/i)) {
+    for (i=0; i < splitted.length; i++) {
+        if (splitted[i].match(/[A-za-z0–9_]/i)) {
 
-            response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${z[i]}`)
+            response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${splitted[i]}`)
             data = await response.json()
             console.log(data)
             if (data.title != "No Definitions Found") {
-                console.log("english word" + " " + z[i])
                 console.log(data.title)
                 return false
             } 
