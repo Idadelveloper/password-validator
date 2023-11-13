@@ -1,11 +1,6 @@
 var is_visible = false;
 var count = 0
-var conditions = {
-    correctRange: false,
-    includesNumber: false,
-    onlyLatin: false,
-    nonDict: false
-}
+
 
 function see() {
     var input = document.getElementById("password");
@@ -23,102 +18,23 @@ function see() {
 
 }
 
-
-async function isValidWord(word) {
-    const response = await 
-    fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-    const data = await response.json()
-    if (data.title === "No Definitions Found") {
-        document.getElementById("check4").style.color = "green"
-        count ++
-        return true
-    } else if (response.status === 200 || "200") {
-        document.getElementById("check4").style.color = "red"
-        conditions.nonDict == false
-        return true
-    } else  {
-        document.getElementById("check4").style.color = "green"
-        count ++
-        return true
-    }
-}
-
-async function checkValidity() {
+// displays result if valid or invalid
+async function showResult() {
     var password = document.getElementById("password").value;
     var password = password.trim()
+    let res = await checkValidity(password)
 
-    // const response = await 
-    fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${password}`)
-    .then(res => {return res.json()})
-    .then((response) => {
-        // const data =  response.json()
-        if (response.title === "No Definitions Found") {
-            document.getElementById("check4").style.color = "green"
-            conditions.nonDict = true
-            count ++
-        } else if (response.status === 200 || "200") {
-            document.getElementById("check4").style.color = "red"
-        } else  {
-            document.getElementById("check4").style.color = "green"
-            count ++
-        }
-    })
-    .then(() => {
-        var input = document.getElementById("password").value;
-
-        input = input.trim();
-        if (input.length >= 8 && input.length <= 16) {
-            document.getElementById("check0").style.color = "green";
-            conditions.correctRange = true
-            count++
-        } else {
-            document.getElementById("check0").style.color = "red";
-            conditions.correctRange = false
-        }
-    
-        if (input.match(/[0-9]/i)) {
-            document.getElementById("check2").style.color = "green"
-            conditions.includesNumber = true
-            count++
-        } else {
-            document.getElementById("check2").style.color = "red";
-            conditions.includesNumber = false
-        }
-    
-        if (input.match(/[A-za-z0–9_]/i)) {
-            document.getElementById("check3").style.color = "green"
-            conditions.onlyLatin = true
-            count++
-        } else {
-            document.getElementById("check3").style.color = "red";
-            conditions.onlyLatin = false
-        }
-    })
-    .then(() => {
-        console.log(conditions)
-        if (conditions.correctRange && conditions.includesNumber && conditions.nonDict && conditions.onlyLatin) {
-            document.getElementById("result").innerHTML = "Your password is Valid"
-        } else {
-            document.getElementById("result").innerHTML = "Your password is Invalid"
-        }
-    })
-    .catch((err) => console.log(err))
-    
-
-}
-
-function showResult() {
-
-    let input = document.getElementById("password")
-   
-    if (checkValidity()) {
-        document.getElementById("results").style.display = "block";
-        document.getElementsByClassName("final-results").style.display = "block"
-        
+    if (res) {
+        console.log("valid password")
+        document.getElementById("result").innerHTML = "Your password is Valid"
+    } else {
+        document.getElementById("result").innerHTML = "Your password is Invalid"
     }
+    document.getElementById("results").style.display = "block";
     
 }
 
+// displays the count of the password as user types and hides the result div while user types
 function inputChange() {
     var input = document.getElementById("password").value;
 
@@ -130,16 +46,42 @@ function inputChange() {
 
 }
 
-function resetResult() {
-    conditions = {
-        correctRange: false,
-        includesNumber: false,
-        onlyLatin: false,
-        nonDict: false
+// checks if password satisfies rules
+async function checkValidity(word) {
+    
+    if (word.length > 16 || word.length < 6 ) {
+        console.log(word.length)
+        return false
     }
-    document.getElementById("rule0").style.color = "black"
-    document.getElementById("rule1").style.color = "black"
-    document.getElementById("rule2").style.color = "black"
-    document.getElementById("rule3").style.color = "black"
-    document.getElementById("result").innerText = "Waiting for results..."
+    console.log("length checked")
+
+    
+    var regex = /^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$/;
+    if (regex.test(word) != true) {
+        console.log(regex.test(word))
+        console.log("non latin characters")
+        return false
+    }
+    console.log("latin checked")
+
+    var z = word.match(/[\d\.]+|\D+/g);
+    console.log(z);
+    
+    for (i=0; i < z.length; i++) {
+        if (z[i].match(/[A-za-z0–9_]/i)) {
+
+            response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${z[i]}`)
+            data = await response.json()
+            console.log(data)
+            if (data.title != "No Definitions Found") {
+                console.log("english word" + " " + z[i])
+                console.log(data.title)
+                return false
+            } 
+        }
+    }
+    console.log("dictionary word checked")
+    
+
+    return true
 }
